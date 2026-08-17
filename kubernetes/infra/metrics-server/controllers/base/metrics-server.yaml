@@ -1,0 +1,35 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: metrics-server-chart
+spec:
+  interval: 1h
+  url: oci://registry/charts/metrics-server # placeholder
+  layerSelector:
+    mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+    operation: copy
+  ref:
+    semver: '*'
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: metrics-server
+spec:
+  interval: 1h
+  releaseName: metrics-server
+  dependsOn:
+    - name: cert-manager
+      namespace: cert-manager
+  chartRef:
+    kind: OCIRepository
+    name: metrics-server-chart
+  values:
+    tls:
+      type: cert-manager
+      certManager:
+        addInjectorAnnotations: true
+        existingIssuer:
+          enabled: true
+          kind: ClusterIssuer
+          name: self-signed
