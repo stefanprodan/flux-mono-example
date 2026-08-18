@@ -48,7 +48,7 @@ metadata:
     env: ${env}
 ```
 
-Add to `kubernetes/infra/core/base/network-core.yaml`:
+Add to `kubernetes/infra/core/base/network-policies.yaml`:
 
 ```yaml
 ---
@@ -212,11 +212,21 @@ flux get helmreleases -n foo
 
 ## Adding a new environment
 
-Create `envs/<env>/kustomization.yaml` in each component layer, in `core/` and
-in every app (see [Onboarding an app](onboarding-apps.md)), and a new
-`kubernetes/clusters/<env>/` directory with its own
-`flux-instance.yaml`, `flux-vars.yaml` (`env: <env>`), `infra-reconcilers.yaml`
-and `apps-reconcilers.yaml`. The reconciler files themselves are shared.
+Infra components follow the **cluster env** `${env}` (`dev`, `prod`), one per
+cluster. To add a cluster env `<env>`:
+
+- create `envs/<env>/kustomization.yaml` in `core/` and in every component
+  layer (`controllers/`, `configs/`) — a missing overlay silently skips the
+  component on that cluster;
+- create `kubernetes/clusters/<cluster>/` with its own `flux-instance.yaml`,
+  `flux-vars.yaml` (`env: <env>`, registries, `cluster_name`),
+  `infra-reconcilers.yaml` and one `apps-<app_env>-reconcilers.yaml` per app
+  env the cluster should host.
+
+The reconciler files themselves are shared. App envs (`test`, `staging`,
+`prod`) are a separate notion — a namespace `apps-<app_env>` selected by
+`apps/<app>/envs/<app_env>` overlays — and do not require any infra overlay;
+see [Onboarding an app](onboarding-apps.md#hosting-a-new-app-env-on-a-cluster).
 
 ## Removing a component
 
