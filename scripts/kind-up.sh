@@ -49,10 +49,27 @@ if [ "$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true
     --name "${reg_name}" registry:3
 fi
 
+# Configure containerd on every node to pull from the local registry over plain HTTP.
+# Kind node images default to config_path=/etc/containerd/certs.d, so a hosts.toml
+# per registry host is all that is needed. Both names are registered so that
+# images can be referenced as localhost:5050/... or flux-registry:5000/...
+configure_containerd() {
+  for node in $(kind get nodes --name "${cluster_name}"); do
+    for host in "localhost:${reg_localhost_port}" "${reg_name}:${reg_cluster_port}"; do
+      registry_dir="/etc/containerd/certs.d/${host}"
+      docker exec "${node}" mkdir -p "${registry_dir}"
+      cat <<EOF | docker exec -i "${node}" cp /dev/stdin "${registry_dir}/hosts.toml"
+[host."http://${reg_name}:${reg_cluster_port}"]
+EOF
+    done
+  done
+}
+
 # Create a cluster with the local registry enabled
 if [ "$(kind get clusters | grep ${cluster_name})" != "${cluster_name}" ]; then
   install_cluster
   register_registry
+  configure_containerd
 else
   echo "cluster ${cluster_name} exists"
 fi

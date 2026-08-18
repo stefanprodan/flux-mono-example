@@ -1,14 +1,27 @@
 apiVersion: mirror.plugin.fluxcd.io/v1beta1
 kind: Config
-artifacts:
-  - source: quay.io/jetstack/charts/cert-manager
-    destination: localhost:5050/charts/cert-manager
-    selector:
-      semver: "*"
-      limit: 1
 charts:
   - name: metrics-server
     source: https://kubernetes-sigs.github.io/metrics-server/
     destination: oci://localhost:5050/charts
     version: "*"
     limit: 1
+artifacts:
+  - source: quay.io/jetstack/charts/cert-manager
+    destination: localhost:5050/charts/cert-manager
+    selector:
+      semver: "*"
+      limit: 1
+  # app images: podinfo mirrored under the app name, simulating two microservices
+  # pre-release images are simulated in scripts/flux-mirror.sh
+  - source: ghcr.io/stefanprodan/podinfo
+    destination: localhost:5050/frontend
+    selector:
+      semver: "6.14.0"
+      limit: 1
+  - source: ghcr.io/stefanprodan/podinfo
+    destination: localhost:5050/backend
+    selector:
+      semver: "6.14.0"
+      limit: 1
+

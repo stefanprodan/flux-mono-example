@@ -49,7 +49,7 @@ ls: ## List all deployed resources
 ##@ Artifacts
 
 flux-mirror: ## Mirror Helm charts to the local registry.
-	flux mirror sync flux/local-mirror.yaml
+	./scripts/flux-mirror.sh
 
 flux-push: ## Push the Kubernetes manifests to the local registry.
 	./scripts/flux-push.sh
