@@ -92,8 +92,9 @@ flowchart LR
 
 Pushing `6.16.0` to the dev registry rolls it out to `test` and `staging` on
 the next scan; pushing `6.17.0-1` only reaches `test`. Nothing reaches `prod`
-until someone (or a pipeline) runs `flux mirror` into the prod registry; the
-range can additionally be pinned per app env (e.g. `6.14.x` on `prod`).
+until someone (or a pipeline) runs `make promote APP=frontend VERSION=6.16.0`,
+which copies the image into the prod registry with `flux mirror` — see
+[Promoting app versions](docs/promotion.md).
 
 ## Layout
 
@@ -158,4 +159,5 @@ To update the skill run `flux operator skills update`.
 | [Onboarding an infra component](docs/onboarding-infra.md) | Step-by-step guide to add a new infrastructure component (Helm chart + configs) |
 | [Onboarding an app](docs/onboarding-apps.md) | Step-by-step guide to add an application (base + test/staging/prod overlays), host a new app env and promote versions |
 | [Registry and artifacts](docs/registry-and-artifacts.md) | How charts and app images are mirrored and manifests are pushed to the local registry |
+| [Promoting app versions](docs/promotion.md) | How an app version moves from the dev registry to the prod registry with `make promote` |
 | [Local development](docs/local-development.md) | Tooling, `make` targets, validation with `make vet`, and the day-to-day workflow |

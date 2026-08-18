@@ -331,9 +331,13 @@ namespace, copies `flux-vars` into it and deploys every app there.
 Each app env has its own image policy: the `app_semver` range in
 `clusters/<cluster>/apps-<app_env>-reconcilers.yaml`: `x || >=0.0.0-0` on
 `test` (any version, release candidates included), `x` on `staging` and `prod`
-(stable versions only). Pinning or promoting is
-changing the range for the target app env and `make sync`; the RSIPs in that
-namespace re-scan and roll out the newest matching tag.
+(stable versions only). Pinning is changing the range for the target app env
+and `make sync`; the RSIPs in that namespace re-scan and roll out the newest
+matching tag.
+
+`prod` runs on a different cluster with its own registry, so a version reaches
+it only when the image is copied there: `make promote APP=bar VERSION=6.14.0`.
+See [Promoting app versions](promotion.md).
 
 Ranges must not start with a YAML indicator (`>`, `|`, `*`, `&`, `%`, `@`,
 `[`, `{`): kustomize drops the quotes and post-build substitution would produce

@@ -7,4 +7,4 @@ reg_name="${cluster_name}-registry"
 
 kind delete cluster --name ${cluster_name}
 
-docker rm -f ${reg_name}
+docker rm -f ${reg_name} ${reg_name}-prod

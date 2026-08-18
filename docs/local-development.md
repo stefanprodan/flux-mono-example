@@ -20,9 +20,10 @@ plugins `operator`, `mirror` and `schema`.
 | `make sync` | Push manifests to the registry and reconcile (`flux-push` + `flux-sync`) |
 | `make vet` | Validate all manifests (see below) |
 | `make ls` | `flux operator tree` of everything under `flux-system` |
-| `make cluster-up` / `cluster-down` | Just the KinD cluster + registry |
+| `make cluster-up` / `cluster-down` | Just the KinD cluster + the two registries (`localhost:5050` dev, `localhost:5051` prod stand-in) |
 | `make flux-mirror` | `scripts/flux-mirror.sh`: `flux mirror sync flux/local-mirror.yaml` (charts + app images) and tag the app images as pre-release `6.15.0-1` |
 | `make flux-push` | Push `./kubernetes` as an OCI artifact if it changed |
+| `make promote APP=<app> VERSION=<v>` | Copy an app image from the dev to the prod registry (see [Promoting app versions](promotion.md)) |
 | `make flux-up` | Install Flux Operator + FluxInstance and wait for the infra and app ResourceSets to become Ready |
 | `make flux-sync` | Reconcile the cluster with the latest artifact |
 | `make flux-web` | Port-forward the Flux Web UI to http://localhost:9080 |

@@ -14,6 +14,7 @@ Read `docs/` before making structural changes:
 - `docs/onboarding-infra.md` — how to add an infra component (follow this exactly)
 - `docs/onboarding-apps.md` — how to add an application (follow this exactly)
 - `docs/registry-and-artifacts.md` — chart mirroring and manifest push
+- `docs/promotion.md` — promoting an app version to the prod registry (`make promote`)
 - `docs/local-development.md` — make targets, validation, troubleshooting
 
 The `.agents/skills/gitops-knowledge` skill has Flux/Flux Operator API
@@ -98,7 +99,10 @@ Rules:
   `staging` visibly run different versions. A new app needs a mirror entry
   and, optionally, a `flux tag artifact` line there. `scripts/kind-up.sh`
   writes containerd `hosts.toml` entries so nodes pull `flux-registry:5000/*`
-  over HTTP.
+  over HTTP. It also starts `flux-registry-prod` (`localhost:5051`), the
+  stand-in for the prod registry (`flux-registry-prod:5000` in prod
+  `flux-vars`); `make promote APP=<app> VERSION=<v>` copies an app image
+  there via `flux/promote.yaml` (`docs/promotion.md`).
 - Every `envs/<env>/kustomization.yaml` references `../../base`. Each infra
   layer must have an overlay for every cluster env (`dev`, `prod`); a missing
   overlay means the component is silently skipped on that cluster.

@@ -12,4 +12,5 @@ cluster from that registry.
 | [Onboarding an infra component](onboarding-infra.md) | Step-by-step guide to add a new infrastructure component (Helm chart + configs) |
 | [Onboarding an app](onboarding-apps.md) | Step-by-step guide to add an application (base + test/staging/prod overlays), host a new app env and promote versions |
 | [Registry and artifacts](registry-and-artifacts.md) | How charts and app images are mirrored and manifests are pushed to the local registry |
+| [Promoting app versions](promotion.md) | How an app version moves from the dev registry to the prod registry with `make promote` |
 | [Local development](local-development.md) | Tooling, `make` targets, validation with `make vet`, and the day-to-day workflow |

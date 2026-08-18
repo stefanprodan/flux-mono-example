@@ -21,6 +21,11 @@ registry, and Flux consumes all of them from there:
 | your machine (push side) | `localhost:5050` |
 | inside the cluster (pull side) | `flux-registry:5000` |
 
+It also starts a second container, `flux-registry-prod` on `localhost:5051`,
+which stands in for the prod cluster's registry (`flux-registry-prod:5000` in
+the prod `flux-vars`). Nothing is mirrored there by `make up`; images arrive
+only through `make promote` — see [Promoting app versions](promotion.md).
+
 The push side is what `flux/local-mirror.yaml` and `scripts/flux-push.sh` use;
 the pull side is what `flux-instance.yaml` and `flux-vars.yaml`
 (`cluster_registry`, `app_registry`) use. The registry is plain HTTP, hence

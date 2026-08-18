@@ -344,9 +344,9 @@ Each cluster defines the same variable set in `kubernetes/clusters/<cluster>/flu
 | Variable | `dev` | `prod` | Used for |
 |----------|-------|--------|----------|
 | `env` | `dev` | `prod` | RSIP selectors, `infra/**/envs/<env>` overlay selection, namespace annotations |
-| `cluster_registry` | `flux-registry:5000` | `docker.io/stefanprodan` | Chart `OCIRepository` URLs |
-| `app_registry` | `flux-registry:5000` | `docker.io/stefanprodan` | App image RSIP scan URL and `spec.images.newName` |
-| `app_registry_insecure` | `"true"` | `"false"` | `spec.insecure` on the app image RSIPs (plain-HTTP registry) |
+| `cluster_registry` | `flux-registry:5000` | `flux-registry-prod:5000` | Chart `OCIRepository` URLs |
+| `app_registry` | `flux-registry:5000` | `flux-registry-prod:5000` | App image RSIP scan URL and `spec.images.newName` |
+| `app_registry_insecure` | `"true"` | `"true"` | `spec.insecure` on the app image RSIPs (plain-HTTP registry; `"false"` for a TLS registry such as ECR) |
 | `cluster_name` | `kind-flux` | `prod-1` | Namespace annotations, `app.env` |
 
 Two more variables come from `postBuild.substitute` in each

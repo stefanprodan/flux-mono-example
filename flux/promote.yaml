@@ -1,0 +1,12 @@
+# Promote one app image from the dev registry to the prod registry.
+# Usage: make promote APP=frontend VERSION=6.14.0
+# APP and VERSION are substituted from the environment by flux mirror.
+# Locally the prod registry is a second container on localhost:5051 (see docs/promotion.md).
+apiVersion: mirror.plugin.fluxcd.io/v1beta1
+kind: Config
+artifacts:
+  - source: localhost:5050/${APP}
+    destination: localhost:5051/${APP}
+    selector:
+      semver: "${VERSION}"
+      limit: 1

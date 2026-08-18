@@ -54,6 +54,9 @@ flux-mirror: ## Mirror Helm charts to the local registry.
 flux-push: ## Push the Kubernetes manifests to the local registry.
 	./scripts/flux-push.sh
 
+promote: ## Copy an app image from the dev to the prod registry, e.g. make promote APP=frontend VERSION=6.14.0
+	flux mirror sync flux/promote.yaml
+
 ##@ Flux
 
 flux-up: ## Deploy Flux Operator on the Kubernetes KinD cluster.

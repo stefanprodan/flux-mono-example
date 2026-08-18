@@ -7,9 +7,10 @@
 ├── flux/
 │   ├── flux-vars.env           # substitution variables used by `make vet` (mirrors flux-vars ConfigMap + app-env vars)
 │   ├── local-mirror.yaml       # Flux Mirror config: charts and app images to copy into the local registry
+│   ├── promote.yaml            # Flux Mirror config: copy one app image from the dev to the prod registry
 │   └── schema.yaml             # Flux Schema config used by `make vet`
 ├── scripts/                    # shell scripts called by the Makefile
-│   ├── kind-up.sh              # create the KinD cluster + local registry (+ containerd hosts.toml)
+│   ├── kind-up.sh              # create the KinD cluster + dev/prod registries (+ containerd hosts.toml)
 │   ├── kind-down.sh            # delete them
 │   ├── flux-mirror.sh          # flux mirror sync + tag a pre-release of the app images
 │   ├── flux-push.sh            # push ./kubernetes as an OCI artifact
@@ -181,6 +182,9 @@ App names must not collide with infra component names: both produce
   for each microservice) and `scripts/flux-mirror.sh` tags it as pre-release
   `6.15.0-1` too; on `dev` the app RSIPs scan only the local registry. See
   [Registry and artifacts](registry-and-artifacts.md).
+- `promote.yaml` — Flux Mirror configuration used by `make promote APP=<app> VERSION=<v>`
+  to copy an app image from the dev registry to the prod registry. See
+  [Promoting app versions](promotion.md).
 - `schema.yaml` — Flux Schema configuration used by `make vet`. See [Local development](local-development.md).
 - `flux-vars.env` — dotenv copy of the `flux-vars` ConfigMap values (dev) plus
   the app-env variables `app_env` and `app_semver`, used by `make vet` to

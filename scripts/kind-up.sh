@@ -7,6 +7,9 @@ cluster_version="${CLUSTER_VERSION:=v1.36.1}"
 reg_name="${cluster_name}-registry"
 reg_localhost_port="5050"
 reg_cluster_port="5000"
+# A second registry stands in for the prod registry (see docs/promotion.md).
+prod_reg_name="${reg_name}-prod"
+prod_reg_localhost_port="5051"
 
 install_cluster() {
 cat <<EOF | kind create cluster --name ${cluster_name} --wait 5m --config=-
@@ -42,12 +45,15 @@ data:
 EOF
 }
 
-# Create a registry container
-if [ "$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true)" != 'true' ]; then
-  echo "starting Docker registry on localhost:${reg_localhost_port}"
-  docker run -d --restart=always -p "127.0.0.1:${reg_localhost_port}:${reg_cluster_port}" \
-    --name "${reg_name}" registry:3
-fi
+# Create the registry containers (dev + simulated prod)
+for spec in "${reg_name}:${reg_localhost_port}" "${prod_reg_name}:${prod_reg_localhost_port}"; do
+  name="${spec%%:*}"; port="${spec##*:}"
+  if [ "$(docker inspect -f '{{.State.Running}}' "${name}" 2>/dev/null || true)" != 'true' ]; then
+    echo "starting Docker registry ${name} on localhost:${port}"
+    docker run -d --restart=always -p "127.0.0.1:${port}:${reg_cluster_port}" \
+      --name "${name}" registry:3
+  fi
+done
 
 # Configure containerd on every node to pull from the local registry over plain HTTP.
 # Kind node images default to config_path=/etc/containerd/certs.d, so a hosts.toml
