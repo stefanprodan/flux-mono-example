@@ -30,11 +30,11 @@ kubernetes/
 
 ## Try it locally
 
-Requires Docker. Everything else (kind, kubectl, flux + plugins) is installed by
-`make tools`.
+Requires Docker and [Homebrew](https://brew.sh). Everything else (kind, kubectl,
+flux + plugins) is installed by `make tools`.
 
 ```sh
-make tools   # install CLIs
+make tools   # brew bundle + flux plugins
 make up      # kind cluster + local registry, mirror charts/images, push manifests, install Flux
 make ls      # see what got deployed
 make flux-web  # Flux Web UI at http://localhost:9080
