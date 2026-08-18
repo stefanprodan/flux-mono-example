@@ -61,7 +61,7 @@ flowchart LR
   reg[(OCI registry<br/>flux-cluster:dev)] -- pull --> src[OCIRepository<br/>flux-system]
 
   subgraph cluster[dev cluster]
-    src --> ag[ArtifactGenerator<br/>apps/&lcub;app&rcub;/envs/&lcub;env&rcub;]
+    src --> ag["ArtifactGenerator<br/>apps/{app}/envs/{env}"]
 
     ag --> ft[ExternalArtifact<br/>frontend-test]
     ag --> fs[ExternalArtifact<br/>frontend-staging]
