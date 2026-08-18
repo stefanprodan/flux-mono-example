@@ -51,6 +51,11 @@ make down    # tear everything down
 
 ## Docs
 
-See [docs/](docs/README.md) for the repository structure, the reconciliation
-pipeline, onboarding guides for infra components and apps, and local
-development notes.
+| Guide | What it covers |
+|-------|----------------|
+| [Repository structure](docs/repo-structure.md) | Directory layout, cluster envs vs app envs, and how the pieces fit together |
+| [Reconciliation pipeline](docs/reconciliation.md) | How Flux Operator turns directories into deployments (ArtifactGenerator → ResourceSetInputProvider → ResourceSet), and how apps get per-app-env gitless image automation |
+| [Onboarding an infra component](docs/onboarding-infra.md) | Step-by-step guide to add a new infrastructure component (Helm chart + configs) |
+| [Onboarding an app](docs/onboarding-apps.md) | Step-by-step guide to add an application (base + test/staging/prod overlays), host a new app env and promote versions |
+| [Registry and artifacts](docs/registry-and-artifacts.md) | How charts and app images are mirrored and manifests are pushed to the local registry |
+| [Local development](docs/local-development.md) | Tooling, `make` targets, validation with `make vet`, and the day-to-day workflow |
