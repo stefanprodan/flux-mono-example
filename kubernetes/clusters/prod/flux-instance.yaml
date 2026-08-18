@@ -15,20 +15,12 @@ spec:
     - source-watcher
   cluster:
     type: kubernetes
-    size: medium
+    size: large
     multitenant: false
     networkPolicy: true
     domain: "cluster.local"
   sync:
     kind: OCIRepository
-    url: "oci://flux-registry:5000/flux-cluster"
-    ref: "local"
-    path: "clusters/local/"
-  kustomize:
-    patches:
-      - patch: |
-          - op: add
-            path: /spec/insecure
-            value: true
-        target:
-          kind: OCIRepository
+    url: "oci://ghcr.io/stefanprodan/flux-cluster"
+    ref: "prod"
+    path: "clusters/prod/"

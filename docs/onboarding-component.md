@@ -73,7 +73,9 @@ kubernetes/infra/components/foo/controllers/
 │   ├── kustomization.yaml
 │   └── foo.yaml
 └── envs/
-    └── local/
+    ├── dev/
+    │   └── kustomization.yaml
+    └── prod/
         └── kustomization.yaml
 ```
 
@@ -87,7 +89,7 @@ resources:
   - foo.yaml
 ```
 
-`base/foo.yaml` — use `${registry}` for the chart URL; it is substituted from
+`base/foo.yaml` — use `${cluster_registry}` for the chart URL; it is substituted from
 `flux-vars` at reconcile time:
 
 ```yaml
@@ -97,7 +99,7 @@ metadata:
   name: foo-chart
 spec:
   interval: 1h
-  url: oci://${registry}/charts/foo
+  url: oci://${cluster_registry}/charts/foo
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
@@ -127,8 +129,8 @@ because the FluxInstance runs with `multitenant: false`):
       namespace: cert-manager
 ```
 
-`envs/local/kustomization.yaml` — the local registry is plain HTTP, so mark
-the OCIRepository as insecure; add any other local-only patches here:
+`envs/dev/kustomization.yaml` — the local registry is plain HTTP, so mark
+the OCIRepository as insecure; add any other dev-only patches here:
 
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -145,9 +147,23 @@ patches:
         value: true
 ```
 
+`envs/prod/kustomization.yaml` — no insecure patch (the production registry is
+TLS); add prod-only patches such as replica counts here:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+```
+
+Every `envs/<env>` directory must exist for every cluster you run, otherwise
+the ArtifactGenerator produces no artifact for that env and the component is
+silently skipped there.
+
 That is all the wiring needed. The `infra-controllers` ArtifactGenerator
-matches `infra/components/foo/controllers/envs/local`, produces the
-`foo-local` artifact, and the ResourceSet generates a `foo` Kustomization
+matches `infra/components/foo/controllers/envs/dev`, produces the
+`foo-dev` artifact, and the ResourceSet generates a `foo` Kustomization
 (the ResourceSet itself waits for `infra-core` to be Ready first).
 
 ## 4. (Optional) Create the configs layer
@@ -161,11 +177,13 @@ kubernetes/infra/components/foo/configs/
 │   ├── kustomization.yaml
 │   └── <resources>.yaml
 └── envs/
-    └── local/
+    ├── dev/
+    │   └── kustomization.yaml
+    └── prod/
         └── kustomization.yaml
 ```
 
-The `envs/local/kustomization.yaml` at minimum contains:
+Each `envs/<env>/kustomization.yaml` at minimum contains:
 
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1

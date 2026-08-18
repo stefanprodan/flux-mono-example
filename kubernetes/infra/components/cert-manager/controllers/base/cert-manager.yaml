@@ -4,7 +4,7 @@ metadata:
   name: cert-manager-chart
 spec:
   interval: 1h
-  url: oci://${registry}/charts/cert-manager
+  url: oci://${cluster_registry}/charts/cert-manager
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy

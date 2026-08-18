@@ -19,7 +19,7 @@ registry, and Flux consumes both from there:
 | inside the cluster (pull side) | `flux-registry:5000` |
 
 The push side is what `flux/local-mirror.yaml` and `scripts/flux-push.sh` use;
-the pull side is what `flux-instance.yaml` and `flux-vars.yaml` (`registry`)
+the pull side is what `flux-instance.yaml` and `flux-vars.yaml` (`cluster_registry`)
 use. The registry is plain HTTP, hence `insecure: true` on every OCIRepository
 that points at it.
 
@@ -53,7 +53,7 @@ charts:                                       # HTTPS Helm repo → OCI
 - `charts` pulls from a classic Helm repository and pushes as an OCI chart.
 
 Every chart therefore ends up at `oci://localhost:5050/charts/<name>` on the
-push side, i.e. `oci://${registry}/charts/<name>` from the cluster's point of
+push side, i.e. `oci://${cluster_registry}/charts/<name>` from the cluster's point of
 view. Component `OCIRepository`s use exactly that URL, with `ref.semver: '*'`
 to follow the newest mirrored version.
 
@@ -64,13 +64,13 @@ interval (or immediately with `flux reconcile source oci <name> -n <ns>`).
 ## Pushing the manifests — `make flux-push`
 
 `scripts/flux-push.sh` runs `flux diff artifact` against
-`oci://localhost:5050/flux-cluster:local` and, only if the local
+`oci://localhost:5050/flux-cluster:dev` and, only if the local
 `kubernetes/` directory differs, `flux push artifact` with the Git remote and
 commit SHA as provenance metadata. Unchanged trees are skipped.
 
 The root `OCIRepository/flux-system` in the cluster pulls this artifact
-(`ref.tag: local`), and the `flux-system` Kustomization applies
-`clusters/local/` from it — see [Reconciliation pipeline](reconciliation.md).
+(`ref.tag: dev`), and the `flux-system` Kustomization applies
+`clusters/dev/` from it — see [Reconciliation pipeline](reconciliation.md).
 
 ## Full lifecycle
 
@@ -81,5 +81,5 @@ make down    # delete the cluster and the registry container
 ```
 
 `make flux-up` installs the Flux Operator and applies
-`kubernetes/clusters/local/flux-instance.yaml`; from then on the cluster is
+`kubernetes/clusters/dev/flux-instance.yaml`; from then on the cluster is
 driven entirely by what is in the registry.

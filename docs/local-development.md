@@ -91,11 +91,11 @@ Common causes: the directory doesn't match the `pathPattern`
 ## Conventions
 
 - Cluster-specific values go in `kubernetes/clusters/<cluster>/flux-vars.yaml`,
-  never hardcoded in component manifests. Use `${registry}`, `${env}`,
-  `${cluster_name}`. Mirror new variables in `flux/flux-vars.env` so `make vet` can resolve them.
+  never hardcoded in component manifests. Use `${cluster_registry}`, `${app_registry}`,
+  `${env}`, `${cluster_name}`. Add new variables to every cluster's `flux-vars.yaml` and to `flux/flux-vars.env` (dev values) so `make vet` can resolve them.
 - Namespaces belong in `kubernetes/infra/core/`, not in components.
 - Environment-specific tweaks go in `envs/<env>/kustomization.yaml` patches;
   keep `base/` environment-agnostic.
-- Chart `OCIRepository`s follow `oci://${registry}/charts/<name>` with
+- Chart `OCIRepository`s follow `oci://${cluster_registry}/charts/<name>` with
   `ref.semver: '*'`; add `insecure: true` in the local overlay.
 - Run `make vet` before committing.

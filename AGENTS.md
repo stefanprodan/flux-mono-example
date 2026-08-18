@@ -21,7 +21,8 @@ references and CLI docs; use it for CRD fields and semantics.
 ## Layout rules (must hold)
 
 - `kubernetes/clusters/<cluster>/` — the only cluster-specific directory:
-  `flux-instance.yaml`, `flux-vars.yaml`, `infra-reconcilers.yaml`.
+  `flux-instance.yaml`, `flux-vars.yaml`, `infra-reconcilers.yaml`. Clusters:
+  `dev` (local KinD, `env: dev`) and `prod` (`env: prod`).
 - `kubernetes/infra/reconcilers/` — one file per layer (`core`,
   `controllers`, `configs`), each with ArtifactGenerator + RSIP + ResourceSet.
   Cluster-agnostic; uses `${env}` from `flux-vars`.
@@ -32,14 +33,17 @@ references and CLI docs; use it for CRD fields and semantics.
   `infra/components/{app}/controllers/envs/{env}` and
   `infra/components/{app}/configs/envs/{env}`. A directory that does not match
   is silently ignored.
-- Every `envs/<env>/kustomization.yaml` references `../../base`.
-- Chart sources: `OCIRepository` with `url: oci://${registry}/charts/<name>`,
+- Every `envs/<env>/kustomization.yaml` references `../../base`. Each layer
+  must have an overlay for **every** env (`dev` and `prod`); a missing overlay
+  means the component is silently skipped on that cluster.
+- Chart sources: `OCIRepository` with `url: oci://${cluster_registry}/charts/<name>`,
   `ref.semver: '*'`, chart `layerSelector`; add `insecure: true` via a JSON
-  patch in the local overlay only. Charts must be listed in
+  patch in the `dev` overlay only. Charts must be listed in
   `flux/local-mirror.yaml`.
-- Variables: use `${registry}`, `${env}`, `${cluster_name}` — never hardcode
-  `flux-registry:5000` or `local`. New variables go in **both**
-  `kubernetes/clusters/local/flux-vars.yaml` and `flux/flux-vars.env`.
+- Variables: use `${cluster_registry}`, `${app_registry}`, `${env}`, `${cluster_name}` —
+  never hardcode `flux-registry:5000`, `ghcr.io/stefanprodan`, `dev` or `prod`.
+  New variables go in **every** `kubernetes/clusters/<cluster>/flux-vars.yaml`
+  and in `flux/flux-vars.env` (dev values, used by `make vet`).
 - Ordering: `infra-core` ResourceSet has `wait: true`; the `infra-controllers`
   ResourceSet `dependsOn` the `infra-core` ResourceSet (`ready: true`);
   configs Kustomizations `dependsOn: <app>`; cross-component ordering goes

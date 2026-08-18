@@ -4,6 +4,7 @@ metadata:
   name: flux-vars
   namespace: flux-system
 data:
-  env: "local"
-  registry: "flux-registry:5000"
+  env: "dev"
+  cluster_registry: "flux-registry:5000"
+  app_registry: "ghcr.io/stefanprodan"
   cluster_name: "kind-flux"

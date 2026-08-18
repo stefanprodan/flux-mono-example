@@ -3,7 +3,7 @@
 set -o errexit
 
 kubernetes_path='kubernetes'
-cluster_name='local'
+cluster_name='dev'
 registry='localhost:5050'
 
 diff_push() {
@@ -35,4 +35,4 @@ diff_push() {
   echo "✔ pushed to ${oci_url}"
 }
 
-diff_push "${registry}/flux-cluster:local" "${kubernetes_path}/"
+diff_push "${registry}/flux-cluster:${cluster_name}" "${kubernetes_path}/"

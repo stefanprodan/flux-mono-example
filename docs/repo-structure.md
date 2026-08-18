@@ -16,10 +16,11 @@
 │   └── validate.sh             # kustomize build + flux-schema validation
 └── kubernetes/                 # everything under here is pushed to the registry
     ├── clusters/
-    │   └── local/              # per-cluster entry point (FluxInstance sync path)
-    │       ├── flux-instance.yaml
-    │       ├── flux-vars.yaml
-    │       └── infra-reconcilers.yaml
+    │   ├── dev/                # local KinD cluster (FluxInstance sync path)
+    │   │   ├── flux-instance.yaml
+    │   │   ├── flux-vars.yaml
+    │   │   └── infra-reconcilers.yaml
+    │   └── prod/               # production cluster, same layout
     └── infra/
         ├── reconcilers/        # ArtifactGenerator + RSIP + ResourceSet per layer
         │   ├── core.yaml
@@ -41,13 +42,14 @@
 ## `kubernetes/clusters/<cluster>/`
 
 The per-cluster entry point. The `FluxInstance` `spec.sync.path` points here
-(`clusters/local/` for the local cluster), so every YAML file in this directory
+(`clusters/dev/` for the local KinD cluster, `clusters/prod/` for production), so
+every YAML file in this directory
 is applied by the root `flux-system` Kustomization.
 
 | File | Purpose |
 |------|---------|
-| `flux-instance.yaml` | The `FluxInstance` that installs Flux and configures the sync source (`oci://flux-registry:5000/flux-cluster`, tag `local`). |
-| `flux-vars.yaml` | A `ConfigMap` (`flux-vars`) with cluster-specific values (`env`, `registry`, `cluster_name`) used for [post-build variable substitution](https://fluxcd.io/flux/components/kustomize/kustomizations/#post-build-variable-substitution). |
+| `flux-instance.yaml` | The `FluxInstance` that installs Flux and configures the sync source (`oci://flux-registry:5000/flux-cluster` tag `dev` for the local cluster; `oci://ghcr.io/stefanprodan/flux-cluster` tag `prod` for production). |
+| `flux-vars.yaml` | A `ConfigMap` (`flux-vars`) with cluster-specific values (`env`, `cluster_registry`, `app_registry`, `cluster_name`) used for [post-build variable substitution](https://fluxcd.io/flux/components/kustomize/kustomizations/#post-build-variable-substitution). |
 | `infra-reconcilers.yaml` | A Flux `Kustomization` that applies `kubernetes/infra/reconcilers/` with variables from `flux-vars`. |
 
 Only this directory should differ between clusters. Everything under
@@ -97,4 +99,4 @@ environment-specific patches. The `ArtifactGenerator` copies both `base/` and
 - `local-mirror.yaml` — Flux Mirror configuration listing which upstream Helm
   charts are copied to the local registry. See [Registry and artifacts](registry-and-artifacts.md).
 - `schema.yaml` — Flux Schema configuration used by `make vet`. See [Local development](local-development.md).
-- `flux-vars.env` — dotenv copy of the `flux-vars` ConfigMap values, used by `make vet` to resolve `${var}` placeholders before validation. Keep it in sync with `kubernetes/clusters/local/flux-vars.yaml`.
+- `flux-vars.env` — dotenv copy of the `flux-vars` ConfigMap values, used by `make vet` to resolve `${var}` placeholders before validation. Keep it in sync with `kubernetes/clusters/dev/flux-vars.yaml` (validation uses the dev values).

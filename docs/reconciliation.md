@@ -7,10 +7,10 @@ Nothing needs to be registered by hand.
 ## Flow
 
 ```text
- registry (oci://flux-registry:5000/flux-cluster:local)
+ registry (oci://flux-registry:5000/flux-cluster:dev)
    │
    ▼
- OCIRepository/flux-system  ──►  Kustomization/flux-system  (path: clusters/local/)
+ OCIRepository/flux-system  ──►  Kustomization/flux-system  (path: clusters/dev/)
                                     │
                                     ├── FluxInstance/flux
                                     ├── ConfigMap/flux-vars
@@ -26,8 +26,8 @@ Nothing needs to be registered by hand.
 
 ### 1. Source
 
-The `FluxInstance` (`kubernetes/clusters/local/flux-instance.yaml`) configures
-the root `OCIRepository/flux-system` to pull `oci://flux-registry:5000/flux-cluster:local`.
+The `FluxInstance` (`kubernetes/clusters/dev/flux-instance.yaml`) configures
+the root `OCIRepository/flux-system` to pull `oci://flux-registry:5000/flux-cluster:dev`.
 This artifact is the whole `kubernetes/` directory as pushed by `make flux-push`.
 Because the local registry is plain HTTP, the FluxInstance patches
 `spec.insecure: true` onto the OCIRepository.
@@ -52,9 +52,9 @@ artifacts:
 ```
 
 For every directory matching the pattern, source-watcher produces an
-`ExternalArtifact` named from the captures (`cert-manager-local`,
-`monitoring-local`, …). The captures become labels on the artifact
-(`app=cert-manager`, `env=local`) alongside `commonMetadata.labels`
+`ExternalArtifact` named from the captures (`cert-manager-dev`,
+`monitoring-dev`, …). The captures become labels on the artifact
+(`app=cert-manager`, `env=dev`) alongside `commonMetadata.labels`
 (`role=infra-controllers`). Each artifact contains only `base/` and
 `envs/<env>/` of that component, so its revision changes only when those files
 change.
@@ -110,8 +110,8 @@ The RSET templates a Flux `Kustomization` per input:
 ```
 
 Every generated Kustomization gets `flux-vars` substitution, so component
-manifests can use `${registry}`, `${env}` and `${cluster_name}` directly
-(e.g. `url: oci://${registry}/charts/cert-manager` in an OCIRepository).
+manifests can use `${cluster_registry}`, `${env}` and `${cluster_name}` directly
+(e.g. `url: oci://${cluster_registry}/charts/cert-manager` in an OCIRepository).
 
 ## Ordering
 
@@ -132,13 +132,18 @@ infra-core  ──►  <app>  ──►  <app>-configs
 
 ## Variables
 
-`kubernetes/clusters/local/flux-vars.yaml`:
+Each cluster defines the same variable set in `kubernetes/clusters/<cluster>/flux-vars.yaml`:
 
-| Variable | Local value | Used for |
-|----------|-------------|----------|
-| `env` | `local` | RSIP selectors, namespace annotations |
-| `registry` | `flux-registry:5000` | Chart `OCIRepository` URLs |
-| `cluster_name` | `kind-flux` | Namespace annotations |
+| Variable | `dev` | `prod` | Used for |
+|----------|-------|--------|----------|
+| `env` | `dev` | `prod` | RSIP selectors, `envs/<env>` overlay selection, namespace annotations |
+| `cluster_registry` | `flux-registry:5000` | `ghcr.io/stefanprodan` | Chart `OCIRepository` URLs |
+| `app_registry` | `ghcr.io/stefanprodan` | `ghcr.io/stefanprodan` | Application container images |
+| `cluster_name` | `kind-flux` | `prod-1` | Namespace annotations |
+
+Because the reconcilers are shared and only `${env}` differs, the same
+`kubernetes/infra` tree produces per-cluster pipelines: on `dev` the
+ArtifactGenerators pick `envs/dev` overlays, on `prod` the `envs/prod` ones.
 
 ## Inspecting the pipeline
 
