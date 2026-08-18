@@ -47,6 +47,49 @@ Git holds the source of truth, the registry is what the cluster consumes, and
 Flux Operator turns directories into Kustomizations. Image tags flow directly
 from the registry to the app deployments — no commit per release.
 
+### In-cluster artifact generation
+
+Flux pulls the whole `kubernetes/` directory as one OCI artifact, but no
+Kustomization reconciles it as a whole. Instead, an `ArtifactGenerator` splits
+it in-cluster into one `ExternalArtifact` per directory that matches a path
+pattern — one per infra component, one per app × app env. Each artifact
+contains only that component's `base/` and `envs/<env>/` files, so its
+revision changes only when those files change:
+
+```mermaid
+flowchart LR
+  reg[(OCI registry<br/>flux-cluster:dev)] -- pull --> src[OCIRepository<br/>flux-system]
+
+  subgraph cluster[dev cluster]
+    src --> ag[ArtifactGenerator<br/>apps/&lcub;app&rcub;/envs/&lcub;env&rcub;]
+
+    ag --> ft[ExternalArtifact<br/>frontend-test]
+    ag --> fs[ExternalArtifact<br/>frontend-staging]
+    ag --> bt[ExternalArtifact<br/>backend-test]
+    ag --> bs[ExternalArtifact<br/>backend-staging]
+
+    ft --> kft[Kustomization<br/>apps-test/frontend]
+    fs --> kfs[Kustomization<br/>apps-staging/frontend]
+    bt --> kbt[Kustomization<br/>apps-test/backend]
+    bs --> kbs[Kustomization<br/>apps-staging/backend]
+  end
+
+  classDef changed stroke:#d97706,stroke-width:3px
+  classDef same stroke-dasharray:4 3,opacity:0.6
+  class reg,src,ag,ft,kft changed
+  class fs,bt,bs,kfs,kbt,kbs same
+```
+
+A `ResourceSet` generates one Kustomization per artifact, each with
+`sourceRef: ExternalArtifact`. When a change to `apps/frontend/envs/test/`
+is pushed (highlighted above), the root artifact revision changes, but only
+the `frontend-test` ExternalArtifact gets a new revision — the others keep
+theirs, so only the `apps-test/frontend` Kustomization reconciles. A commit
+touching one app never triggers a reconciliation storm across every component
+and app env; the same holds for infra components under
+`infra/components/<name>/`. See
+[Reconciliation pipeline](docs/reconciliation.md) for the full flow.
+
 ### App delivery
 
 Each cluster has its own image registry (`app_registry` in `flux-vars`), and
