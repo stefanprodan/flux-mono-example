@@ -13,9 +13,9 @@ What that means in practice:
   the folder and it's uninstalled. You never write a Flux Kustomization for it.
 - **App releases don't need a commit.** For each app, Flux Operator watches
   the container registry and picks the newest image tag that matches the
-  environment's rule (for example "any stable version" in prod, "anything,
-  release candidates included" in test). Push a new image and it rolls out.
-- **Two ideas of "environment".** A cluster is `dev` or `prod`, which decides
+  environment's rule (for example "latest stable version" in staging and prod,
+  "release candidates" in test). Push a new image and it rolls out.
+- **Cluster environments and app environments are separate.** A cluster is `dev` or `prod`, which decides
   how infra is configured. On top of that, apps run in *app environments*:
   `test`, `staging` and `prod`, each a namespace containing a copy of every
   app. The dev cluster hosts `test` and `staging`; the prod cluster hosts
