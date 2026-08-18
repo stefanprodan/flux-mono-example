@@ -23,6 +23,78 @@ What that means in practice:
   `test` and `staging`; the prod cluster hosts `prod`. Adding another app
   environment to a cluster is one small file.
 
+## How it works
+
+```mermaid
+flowchart LR
+  git[Git monorepo] -- push --> reg[(OCI registry<br/>manifests, charts, images)]
+
+  subgraph dev[dev cluster]
+    devop[Flux Operator] --> devinfra[Infra components]
+    devop --> devapps[Apps: test, staging]
+  end
+
+  subgraph prod[prod cluster]
+    prodop[Flux Operator] --> prodinfra[Infra components]
+    prodop --> prodapps[Apps: prod]
+  end
+
+  reg -- pull --> devop
+  reg -- pull --> prodop
+```
+
+Git holds the source of truth, the registry is what the cluster consumes, and
+Flux Operator turns directories into Kustomizations. Image tags flow directly
+from the registry to the app deployments — no commit per release.
+
+### App delivery
+
+Each cluster has its own image registry (`app_registry` in `flux-vars`), and
+each app env has its own image policy — a semver range in
+`clusters/<cluster>/apps-<app_env>-reconcilers.yaml`. CI pushes to the dev
+registry; promotion to prod is copying the image to the prod registry:
+
+```mermaid
+flowchart LR
+  ci[CI] -- push --> devimg
+
+  subgraph devreg[dev registry]
+    devimg[(frontend<br/>6.14.0<br/>6.15.0<br/>6.16.0-1)]
+  end
+
+  subgraph dev[dev cluster]
+    subgraph test[apps-test]
+      tpol[policy<br/>latest release candidate]
+      tks[frontend 6.16.0-1]
+    end
+    subgraph staging[apps-staging]
+      spol[policy<br/>latest stable release]
+      sks[frontend 6.15.0]
+    end
+  end
+
+  subgraph prodreg[prod registry]
+    prodimg[(frontend<br/>6.14.0)]
+  end
+
+  subgraph prod[prod cluster]
+    subgraph prodns[apps-prod]
+      ppol[policy<br/>latest stable release]
+      pks[frontend 6.14.0]
+    end
+  end
+
+  devimg --> tpol --> tks
+  devimg --> spol --> sks
+  devimg -- crane copy --> prodimg
+  prodimg --> ppol --> pks
+```
+
+Pushing `6.16.0` to the dev registry rolls it out to `test` and `staging` on
+the next scan; pushing `6.17.0-1` only reaches `test`. Nothing reaches `prod`
+until someone (or a pipeline) runs `crane copy` into the prod registry; the
+range can additionally be pinned per app env (e.g. `6.14.x` on `prod`).
+
 ## Layout
 
 ```text
