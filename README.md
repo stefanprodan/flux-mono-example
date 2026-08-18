@@ -86,13 +86,13 @@ flowchart LR
 
   devimg --> tpol --> tks
   devimg --> spol --> sks
-  devimg -- crane copy --> prodimg
+  devimg -- flux mirror --> prodimg
   prodimg --> ppol --> pks
 ```
 
 Pushing `6.16.0` to the dev registry rolls it out to `test` and `staging` on
 the next scan; pushing `6.17.0-1` only reaches `test`. Nothing reaches `prod`
-until someone (or a pipeline) runs `crane copy` into the prod registry; the
+until someone (or a pipeline) runs `flux mirror` into the prod registry; the
 range can additionally be pinned per app env (e.g. `6.14.x` on `prod`).
 
 ## Layout
