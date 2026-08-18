@@ -1,8 +1,8 @@
 # flux-mono-example
 
-Example of a "gitless GitOps" monorepo: the Kubernetes desired state lives in
+Example of a Gitless GitOps monorepo: the Kubernetes desired state lives in
 Git, but the cluster never talks to Git. Manifests, Helm charts and app images
-are pushed to an OCI registry, and [Flux Operator](https://fluxcd.control-plane.io/operator/)
+are pushed to an OCI registry, and [Flux Operator](https://fluxoperator.dev)
 generates the delivery pipeline from the directory layout.
 
 - Adding a directory under `kubernetes/infra/components/` deploys a component;
@@ -46,7 +46,7 @@ Day to day:
 # edit manifests under kubernetes/
 make vet     # kustomize build + schema validation
 make sync    # push the artifact and reconcile
-make flux-web  # inspect the result in the Flux Web UI at http://localhost:9080
+# inspect the result in the Flux Web UI at http://localhost:9080
 ```
 
 ## Docs
