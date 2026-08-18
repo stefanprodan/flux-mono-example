@@ -32,7 +32,7 @@ sync: flux-push flux-sync ## Build, push and reconcile the local manifests with 
 
 .PHONY: vet
 vet: ## Validate manifests
-	./scripts/validate.sh -d ./kubernetes -c ./flux/schema.yaml
+	./scripts/validate.sh -d ./kubernetes -c ./flux/schema.yaml -E ./flux/flux-vars.env
 
 ##@ Cluster
 
@@ -59,8 +59,8 @@ flux-push: ## Push the Kubernetes manifests to the local registry.
 flux-up: ## Deploy Flux Operator on the Kubernetes KinD cluster.
 	./scripts/flux-up.sh
 
-flux-sync: ## Sync the local cluster with the cluster.
-	./scripts/flux-sync.sh
+flux-sync: ## Sync the local registry with the cluster.
+	flux -n flux-system reconcile source oci flux-system
 
 flux-web: ## Port forward to Flux Web UI
 	kubectl -n flux-system port-forward svc/flux-operator 9080:9080
