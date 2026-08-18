@@ -5,14 +5,21 @@ Git, but the cluster never talks to Git. Manifests, Helm charts and app images
 are pushed to an OCI registry, and [Flux Operator](https://fluxoperator.dev)
 generates the delivery pipeline from the directory layout.
 
-- Adding a directory under `kubernetes/infra/components/` deploys a component;
-  removing it prunes it. No per-component Flux wiring.
-- Apps (`kubernetes/apps/`) get gitless image automation: a
-  `ResourceSetInputProvider` scans the registry for the newest tag matching
-  the app env's semver policy and Flux rolls it out, no commit needed.
-- Two kinds of environment: cluster env (`dev`, `prod`) selects infra
-  overlays; app env (`test`, `staging`, `prod`) is a namespace with one
-  instance of every app. A cluster can host several app envs.
+What that means in practice:
+
+- **Infra is driven by folders.** To install cert-manager on a cluster you
+  create `kubernetes/infra/components/cert-manager/` with a HelmRelease and an
+  overlay per cluster; Flux Operator notices the folder and deploys it. Delete
+  the folder and it's uninstalled. You never write a Flux Kustomization for it.
+- **App releases don't need a commit.** For each app, Flux Operator watches
+  the container registry and picks the newest image tag that matches the
+  environment's rule (for example "any stable version" in prod, "anything,
+  release candidates included" in test). Push a new image and it rolls out.
+- **Two ideas of "environment".** A cluster is `dev` or `prod`, which decides
+  how infra is configured. On top of that, apps run in *app environments*:
+  `test`, `staging` and `prod`, each a namespace containing a copy of every
+  app. The dev cluster hosts `test` and `staging`; the prod cluster hosts
+  `prod`. Adding another app environment to a cluster is one small file.
 
 ## Layout
 
