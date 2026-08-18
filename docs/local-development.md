@@ -23,7 +23,7 @@ plugins `operator`, `mirror` and `schema`.
 | `make cluster-up` / `cluster-down` | Just the KinD cluster + registry |
 | `make flux-mirror` | `scripts/flux-mirror.sh`: `flux mirror sync flux/local-mirror.yaml` (charts + app images) and tag the app images as pre-release `6.15.0-1` |
 | `make flux-push` | Push `./kubernetes` as an OCI artifact if it changed |
-| `make flux-up` | Install Flux Operator + FluxInstance and wait for the `infra-core` ResourceSet |
+| `make flux-up` | Install Flux Operator + FluxInstance and wait for the infra and app ResourceSets to become Ready |
 | `make flux-sync` | Reconcile the cluster with the latest artifact |
 | `make flux-web` | Port-forward the Flux Web UI to http://localhost:9080 |
 

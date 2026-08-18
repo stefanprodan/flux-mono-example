@@ -13,7 +13,7 @@
 │   ├── kind-down.sh            # delete them
 │   ├── flux-mirror.sh          # flux mirror sync + tag a pre-release of the app images
 │   ├── flux-push.sh            # push ./kubernetes as an OCI artifact
-│   ├── flux-up.sh              # install Flux Operator + FluxInstance, wait for infra-core
+│   ├── flux-up.sh              # install Flux Operator + FluxInstance, wait for infra + apps ResourceSets
 │   └── validate.sh             # kustomize build + flux-schema validation
 └── kubernetes/                 # everything under here is pushed to the registry
     ├── clusters/

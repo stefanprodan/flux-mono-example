@@ -143,6 +143,8 @@ make down    # delete the cluster and the registry container
 ```
 
 `make flux-up` installs the Flux Operator, applies
-`kubernetes/clusters/dev/flux-instance.yaml` and waits for the `infra-core`
-ResourceSet to become Ready; from then on the cluster is driven entirely by
-what is in the registry.
+`kubernetes/clusters/dev/flux-instance.yaml` and uses `kubectl wait` to block
+until the infra ResourceSets (`infra-core`, `infra-controllers`,
+`infra-configs`) and, for every app env in `clusters/dev/`, the
+`apps-<app_env>` and per-app ResourceSets are Ready; from then on the cluster
+is driven entirely by what is in the registry.
