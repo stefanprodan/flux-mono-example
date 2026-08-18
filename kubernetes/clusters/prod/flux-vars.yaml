@@ -5,6 +5,6 @@ metadata:
   namespace: flux-system
 data:
   env: "prod"
-  cluster_registry: "ghcr.io/stefanprodan"
-  app_registry: "ghcr.io/stefanprodan"
+  cluster_registry: "docker.io/stefanprodan"
+  app_registry: "docker.io/stefanprodan"
   cluster_name: "prod-1"

@@ -1,0 +1,61 @@
+---
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSetInputProvider
+metadata:
+  name: backend-image
+  namespace: flux-system
+  annotations:
+    fluxcd.controlplane.io/reconcileEvery: "5m"
+spec:
+  type: OCIArtifactTag
+  url: oci://${app_registry}/podinfo
+  defaultValues:
+    app: backend
+  filter:
+    semver: ">=6.0.0"
+    limit: 1
+---
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  name: backend
+  namespace: flux-system
+  annotations:
+    fluxcd.controlplane.io/reconcileTimeout: "10m"
+spec:
+  wait: true
+  dependsOn:
+    - apiVersion: fluxcd.controlplane.io/v1
+      kind: ResourceSet
+      name: infra-controllers
+      namespace: flux-system
+      ready: true
+  inputsFrom:
+    - kind: ResourceSetInputProvider
+      name: backend-image
+  resources:
+    - apiVersion: kustomize.toolkit.fluxcd.io/v1
+      kind: Kustomization
+      metadata:
+        name: << inputs.app >>
+        namespace: flux-system
+      spec:
+        interval: 30m
+        retryInterval: 5m
+        timeout: 5m
+        prune: true
+        wait: true
+        targetNamespace: apps
+        sourceRef:
+          kind: ExternalArtifact
+          name: << inputs.app >>-${env}
+        path: ./envs/${env}
+        images:
+          - name: << inputs.app >>
+            newName: ${app_registry}/podinfo
+            newTag: << inputs.tag | quote >>
+            digest: << inputs.digest | quote >>
+        postBuild:
+          substituteFrom:
+            - kind: ConfigMap
+              name: flux-vars

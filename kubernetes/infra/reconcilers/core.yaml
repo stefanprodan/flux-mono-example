@@ -38,6 +38,8 @@ kind: ResourceSet
 metadata:
   name: infra-core
   namespace: flux-system
+  annotations:
+    fluxcd.controlplane.io/reconcileTimeout: "10m"
 spec:
   wait: true
   inputsFrom:

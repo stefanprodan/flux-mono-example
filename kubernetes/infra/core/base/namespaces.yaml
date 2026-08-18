@@ -13,3 +13,11 @@ metadata:
   annotations:
     cluster-name: ${cluster_name}
     env: ${env}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apps
+  annotations:
+    cluster-name: ${cluster_name}
+    env: ${env}
