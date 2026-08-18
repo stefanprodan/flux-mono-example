@@ -37,3 +37,4 @@ done
 
 echo ""
 echo "✔ Cluster is ready"
+echo "> Next run 'make flux-web' and navigate to http://localhost:9080/"
