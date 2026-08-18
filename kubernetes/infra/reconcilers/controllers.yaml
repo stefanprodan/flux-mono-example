@@ -2,7 +2,7 @@
 apiVersion: source.extensions.fluxcd.io/v1beta1
 kind: ArtifactGenerator
 metadata:
-  name: infra-configs
+  name: infra-controllers
   namespace: flux-system
 spec:
   sources:
@@ -11,42 +11,47 @@ spec:
       name: flux-system
   commonMetadata:
     labels:
-      role: infra-configs
-  pathPattern: "@monorepo/infra/{app}/configs/envs/{env}"
+      role: infra-controllers
+  pathPattern: "@monorepo/infra/components/{app}/controllers/envs/{env}"
   artifacts:
-    - name: "{app}-{env}-configs"
+    - name: "{app}-{env}"
       copy:
-        - from: "@monorepo/infra/{app}/configs/base/**"
+        - from: "@monorepo/infra/components/{app}/controllers/base/**"
           to: "@artifact/base/"
-        - from: "@monorepo/infra/{app}/configs/envs/{env}/**"
+        - from: "@monorepo/infra/components/{app}/controllers/envs/{env}/**"
           to: "@artifact/envs/{env}/"
 ---
 apiVersion: fluxcd.controlplane.io/v1
 kind: ResourceSetInputProvider
 metadata:
-  name: infra-configs
+  name: infra-controllers
   namespace: flux-system
 spec:
   type: ExternalArtifact
   selectors:
     - matchLabels:
-        role: infra-configs
-        env: local
+        role: infra-controllers
+        env: ${env}
 ---
 apiVersion: fluxcd.controlplane.io/v1
 kind: ResourceSet
 metadata:
-  name: infra-configs
+  name: infra-controllers
   namespace: flux-system
 spec:
+  dependsOn:
+    - apiVersion: fluxcd.controlplane.io/v1
+      kind: ResourceSet
+      name: infra-core
+      ready: true
   inputsFrom:
     - kind: ResourceSetInputProvider
-      name: infra-configs
+      name: infra-controllers
   resources:
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
-        name: << inputs.app >>-configs
+        name: << inputs.app >>
         namespace: << inputs.provider.namespace >>
       spec:
         interval: 30m
@@ -54,9 +59,11 @@ spec:
         timeout: 5m
         prune: true
         wait: true
-        dependsOn:
-          - name: << inputs.app >>
         sourceRef:
           kind: ExternalArtifact
           name: << inputs.name >>
         path: ./envs/<< inputs.env >>
+        postBuild:
+          substituteFrom:
+            - kind: ConfigMap
+              name: flux-vars

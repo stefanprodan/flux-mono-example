@@ -4,7 +4,7 @@ metadata:
   name: metrics-server-chart
 spec:
   interval: 1h
-  url: oci://registry/charts/metrics-server # placeholder
+  url: oci://${registry}/charts/metrics-server
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy

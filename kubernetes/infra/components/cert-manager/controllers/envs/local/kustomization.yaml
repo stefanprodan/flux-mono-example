@@ -7,9 +7,6 @@ patches:
       kind: OCIRepository
       name: cert-manager-chart
     patch: |
-      - op: replace
-        path: /spec/url
-        value: oci://flux-registry:5000/charts/cert-manager
       - op: add
         path: /spec/insecure
         value: true
