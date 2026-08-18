@@ -13,7 +13,7 @@ wait_ready() {
 }
 
 echo "Starting cluster bootstrap"
-flux-operator install -f "${cluster_dir}/flux-instance.yaml" --auto-update=false
+flux operator install -f "${cluster_dir}/flux-instance.yaml" --auto-update=false
 
 echo ""
 echo "Waiting for infra sync to complete"
