@@ -3,8 +3,11 @@ kind: ConfigMap
 metadata:
   name: flux-vars
   namespace: flux-system
+  labels:
+    reconcile.fluxcd.io/watch: Enabled
 data:
   env: "prod"
   cluster_registry: "docker.io/stefanprodan"
   app_registry: "docker.io/stefanprodan"
+  app_registry_insecure: "false"
   cluster_name: "prod-1"

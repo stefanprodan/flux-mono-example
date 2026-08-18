@@ -21,15 +21,3 @@ spec:
     - Egress
   egress:
     - {}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-egress
-  namespace: apps
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
-  egress:
-    - {}

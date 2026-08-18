@@ -2,24 +2,29 @@
 apiVersion: fluxcd.controlplane.io/v1
 kind: ResourceSetInputProvider
 metadata:
-  name: backend-image
-  namespace: flux-system
+  name: backend
+  namespace: apps-${app_env}
   annotations:
     fluxcd.controlplane.io/reconcileEvery: "5m"
 spec:
   type: OCIArtifactTag
-  url: oci://${app_registry}/podinfo
+  url: oci://${app_registry}/backend
+  insecure: ${app_registry_insecure}
   defaultValues:
     app: backend
   filter:
-    semver: ">=6.0.0"
+    # The range must not start with a YAML indicator such as ">" or "|":
+    # kustomize drops the quotes and post-build substitution would produce
+    # invalid YAML. Use "x" (any), "6.14.x", "~6.14.0", "^6.14.0" (same major),
+    # or "x || >=0.0.0-0" to include prereleases.
+    semver: "${app_semver}"
     limit: 1
 ---
 apiVersion: fluxcd.controlplane.io/v1
 kind: ResourceSet
 metadata:
   name: backend
-  namespace: flux-system
+  namespace: apps-${app_env}
   annotations:
     fluxcd.controlplane.io/reconcileTimeout: "10m"
 spec:
@@ -27,35 +32,38 @@ spec:
   dependsOn:
     - apiVersion: fluxcd.controlplane.io/v1
       kind: ResourceSet
-      name: infra-controllers
+      name: apps-${app_env}
       namespace: flux-system
       ready: true
   inputsFrom:
     - kind: ResourceSetInputProvider
-      name: backend-image
+      name: backend
   resources:
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
         name: << inputs.app >>
-        namespace: flux-system
+        namespace: apps-${app_env}
       spec:
         interval: 30m
         retryInterval: 5m
         timeout: 5m
         prune: true
         wait: true
-        targetNamespace: apps
+        targetNamespace: apps-${app_env}
         sourceRef:
           kind: ExternalArtifact
-          name: << inputs.app >>-${env}
-        path: ./envs/${env}
+          name: << inputs.app >>-${app_env}
+          namespace: flux-system
+        path: ./envs/${app_env}
         images:
           - name: << inputs.app >>
-            newName: ${app_registry}/podinfo
+            newName: ${app_registry}/<< inputs.app >>
             newTag: << inputs.tag | quote >>
             digest: << inputs.digest | quote >>
         postBuild:
+          substitute:
+            app_env: ${app_env}
           substituteFrom:
             - kind: ConfigMap
               name: flux-vars

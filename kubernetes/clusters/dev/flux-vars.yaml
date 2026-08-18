@@ -3,8 +3,11 @@ kind: ConfigMap
 metadata:
   name: flux-vars
   namespace: flux-system
+  labels:
+    reconcile.fluxcd.io/watch: Enabled
 data:
   env: "dev"
   cluster_registry: "flux-registry:5000"
-  app_registry: "ghcr.io/stefanprodan"
+  app_registry: "flux-registry:5000"
+  app_registry_insecure: "true"
   cluster_name: "kind-flux"
