@@ -46,7 +46,7 @@ Day to day:
 # edit manifests under kubernetes/
 make vet     # kustomize build + schema validation
 make sync    # push the artifact and reconcile
-make down    # tear everything down
+make flux-web  # inspect the result in the Flux Web UI at http://localhost:9080
 ```
 
 ## Docs
