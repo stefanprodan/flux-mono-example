@@ -93,7 +93,8 @@ Common causes: the directory doesn't match the `pathPattern`
 - Cluster-specific values go in `kubernetes/clusters/<cluster>/flux-vars.yaml`,
   never hardcoded in component manifests. Use `${cluster_registry}`, `${app_registry}`,
   `${env}`, `${cluster_name}`. Add new variables to every cluster's `flux-vars.yaml` and to `flux/flux-vars.env` (dev values) so `make vet` can resolve them.
-- Namespaces belong in `kubernetes/infra/core/`, not in components.
+- Namespaces belong in `kubernetes/infra/core/`, not in components or apps.
+  Apps share the `apps` namespace and set no `namespace:` in their bases.
 - Environment-specific tweaks go in `envs/<env>/kustomization.yaml` patches;
   keep `base/` environment-agnostic.
 - Chart `OCIRepository`s follow `oci://${cluster_registry}/charts/<name>` with

@@ -14,14 +14,23 @@ Nothing needs to be registered by hand.
                                     │
                                     ├── FluxInstance/flux
                                     ├── ConfigMap/flux-vars
-                                    └── Kustomization/infra-reconcilers  (path: infra/reconcilers/, substituteFrom: flux-vars)
+                                    ├── Kustomization/infra-reconcilers  (path: infra/reconcilers/, substituteFrom: flux-vars)
+                                    │     │
+                                    │     ├── core.yaml        ─┐
+                                    │     ├── controllers.yaml ├─ ArtifactGenerator + RSIP + ResourceSet
+                                    │     └── configs.yaml    ─┘
+                                    │           │
+                                    │           ▼
+                                    │  ArtifactGenerator ──► ExternalArtifact per matched dir ──► RSIP exports inputs ──► ResourceSet templates Kustomization
+                                    │
+                                    └── Kustomization/apps-reconcilers  (path: apps/reconcilers/, dependsOn: infra-reconcilers)
                                           │
-                                          ├── core.yaml        ─┐
-                                          ├── controllers.yaml ├─ ArtifactGenerator + RSIP + ResourceSet
-                                          └── configs.yaml    ─┘
+                                          ├── artifacts.yaml   ── ArtifactGenerator (apps/{app}/envs/{env} ──► {app}-{env})
+                                          ├── frontend.yaml   ─┐
+                                          └── backend.yaml    ─┴─ RSIP (OCIArtifactTag, image semver) + ResourceSet
                                                 │
                                                 ▼
-   ArtifactGenerator ──► ExternalArtifact per matched dir ──► RSIP exports inputs ──► ResourceSet templates Kustomization
+   RSIP scans oci://${app_registry}/podinfo ──► exports tag+digest ──► ResourceSet templates Kustomization (sourceRef: ExternalArtifact {app}-${env}, spec.images: tag@digest)
 ```
 
 ### 1. Source
@@ -116,9 +125,12 @@ manifests can use `${cluster_registry}`, `${env}` and `${cluster_name}` directly
 ## Ordering
 
 ```text
-infra-core  ──►  <app>  ──►  <app>-configs
-(namespaces,     (controllers,  (CRs such as
- network policies) HelmRelease)   ClusterIssuer)
+infra-core  ──►  <component>  ──►  <component>-configs
+(namespaces,     (controllers,       (CRs such as
+ network policies) HelmRelease)        ClusterIssuer)
+     │
+     └────────► infra-controllers RSET Ready ──►  frontend, backend
+                                                  (apps Kustomizations)
 ```
 
 - The `infra-core` ResourceSet has `wait: true`, so it only becomes Ready once
@@ -129,6 +141,70 @@ infra-core  ──►  <app>  ──►  <app>-configs
 - Configs `dependsOn: <app>` — CRDs exist before custom resources are applied.
 - Cross-component ordering is expressed on the `HelmRelease` itself with
   `spec.dependsOn` (e.g. `metrics-server` depends on `cert-manager/cert-manager`).
+- The `infra-controllers` ResourceSet also has `wait: true`; each app ResourceSet
+  (`frontend`, `backend`) has `spec.dependsOn` on it (`ready: true`), so apps
+  are only deployed once all infra controllers are installed (metrics-server
+  for the HPAs, the `apps` namespace from core).
+
+## Apps and image automation
+
+Apps do not go through the infra RSIP/RSET chain. Each app has its own pair in
+`kubernetes/apps/reconcilers/<app>.yaml`:
+
+```yaml
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSetInputProvider
+metadata:
+  name: frontend-image
+  namespace: flux-system
+  annotations:
+    fluxcd.controlplane.io/reconcileEvery: "5m"
+spec:
+  type: OCIArtifactTag
+  url: oci://${app_registry}/podinfo
+  defaultValues:
+    app: frontend
+  filter:
+    semver: ">=6.0.0"
+    limit: 1
+```
+
+The provider scans the registry every 5 minutes and exports the newest semver
+`tag` and its `digest`, merged with `defaultValues` (`app`) so the ResourceSet
+template knows which app it is rendering. The `ResourceSet` (`dependsOn` the `infra-controllers`
+RSET) templates one Kustomization per app:
+
+```yaml
+- apiVersion: kustomize.toolkit.fluxcd.io/v1
+  kind: Kustomization
+  metadata:
+    name: << inputs.app >>
+    namespace: flux-system
+  spec:
+    targetNamespace: apps
+    sourceRef:
+      kind: ExternalArtifact
+      name: << inputs.app >>-${env}   # produced by the apps ArtifactGenerator
+    path: ./envs/${env}
+    images:
+      - name: << inputs.app >>
+        newName: ${app_registry}/podinfo
+        newTag: << inputs.tag | quote >>
+        digest: << inputs.digest | quote >>
+    postBuild:
+      substituteFrom:
+        - kind: ConfigMap
+          name: flux-vars
+```
+
+When a new tag is published the RSIP exports it, the ResourceSet re-renders, the
+Kustomization `spec.images` changes and Flux rolls out the new image — no Git
+commit needed. The base manifests use the app name as the image (`image: frontend`);
+`spec.images` (matching on `<< inputs.app >>`) always rewrites it to `${app_registry}/podinfo:<tag>@<digest>`.
+`spec.images` runs at kustomize build time, before post-build substitution, so
+the base image name must be a plain reference — a `${var}` placeholder is not
+matched by kustomize.
+
 
 ## Variables
 
@@ -138,7 +214,7 @@ Each cluster defines the same variable set in `kubernetes/clusters/<cluster>/flu
 |----------|-------|--------|----------|
 | `env` | `dev` | `prod` | RSIP selectors, `envs/<env>` overlay selection, namespace annotations |
 | `cluster_registry` | `flux-registry:5000` | `ghcr.io/stefanprodan` | Chart `OCIRepository` URLs |
-| `app_registry` | `ghcr.io/stefanprodan` | `ghcr.io/stefanprodan` | Application container images |
+| `app_registry` | `ghcr.io/stefanprodan` | `ghcr.io/stefanprodan` | App image RSIP scan URL and `spec.images.newName` |
 | `cluster_name` | `kind-flux` | `prod-1` | Namespace annotations |
 
 Because the reconcilers are shared and only `${env}` differs, the same
@@ -159,4 +235,11 @@ Trigger an immediate discovery after pushing a new directory:
 
 ```sh
 flux-operator -n flux-system reconcile rsip infra-controllers
+```
+
+Force an image scan and see what the app providers exported:
+
+```sh
+flux-operator -n flux-system reconcile rsip frontend-image
+kubectl -n flux-system get rsip frontend-image -o jsonpath='{.status.exportedInputs}'
 ```

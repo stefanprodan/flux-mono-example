@@ -8,7 +8,8 @@ cluster from that registry.
 | Guide | What it covers |
 |-------|----------------|
 | [Repository structure](repo-structure.md) | Directory layout and how the pieces fit together |
-| [Reconciliation pipeline](reconciliation.md) | How Flux Operator turns directories into deployments (ArtifactGenerator → ResourceSetInputProvider → ResourceSet) |
-| [Onboarding a component](onboarding-component.md) | Step-by-step guide to add a new infrastructure component |
+| [Reconciliation pipeline](reconciliation.md) | How Flux Operator turns directories into deployments (ArtifactGenerator → ResourceSetInputProvider → ResourceSet), and how apps get gitless image automation |
+| [Onboarding an infra component](onboarding-infra.md) | Step-by-step guide to add a new infrastructure component (Helm chart + configs) |
+| [Onboarding an app](onboarding-apps.md) | Step-by-step guide to add an application with gitless image automation |
 | [Registry and artifacts](registry-and-artifacts.md) | How charts are mirrored and manifests are pushed to the in-cluster registry |
 | [Local development](local-development.md) | Tooling, `make` targets, validation with `make vet`, and the day-to-day workflow |

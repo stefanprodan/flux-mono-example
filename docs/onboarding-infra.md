@@ -1,4 +1,4 @@
-# Onboarding a new infra component
+# Onboarding an infra component
 
 This walkthrough adds a hypothetical component `foo` that installs a Helm chart
 and, optionally, applies custom resources once the chart is installed.
@@ -212,10 +212,11 @@ flux get helmreleases -n foo
 
 ## Adding a new environment
 
-Create `envs/<env>/kustomization.yaml` in each component layer (and in
-`core/`) and a new `kubernetes/clusters/<env>/` directory with its own
-`flux-instance.yaml`, `flux-vars.yaml` (`env: <env>`) and
-`infra-reconcilers.yaml`. The reconciler files themselves are shared.
+Create `envs/<env>/kustomization.yaml` in each component layer, in `core/` and
+in every app (see [Onboarding an app](onboarding-apps.md)), and a new
+`kubernetes/clusters/<env>/` directory with its own
+`flux-instance.yaml`, `flux-vars.yaml` (`env: <env>`), `infra-reconcilers.yaml`
+and `apps-reconcilers.yaml`. The reconciler files themselves are shared.
 
 ## Removing a component
 
