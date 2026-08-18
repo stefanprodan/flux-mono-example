@@ -1,9 +1,10 @@
 # flux-mono-example
 
 Example of a Gitless GitOps monorepo: the Kubernetes desired state lives in
-Git, but the cluster never talks to Git. Manifests, Helm charts and app images
-are pushed to an OCI registry, and [Flux Operator](https://fluxoperator.dev)
-generates the delivery pipeline from the directory layout.
+Git, but the cluster doesn't connect to the Git server.
+Manifests, Helm charts and app images are pushed to an OCI registry,
+and [Flux Operator](https://fluxoperator.dev) generates the delivery
+pipeline from the directory layout.
 
 What that means in practice:
 
@@ -67,12 +68,14 @@ every rule an agent needs is written down in [AGENTS.md](AGENTS.md) and
 Kubernetes schemas), so an agent can check its own work before anything
 reaches a cluster.
 
-In practice you say things like "add ingress-nginx to the infra components",
-"onboard a new app called `payments`" or "pin `staging` to `6.14.x`", and the
-agent creates the directories, mirror entries and reconciler files, runs
-`make vet` and `make sync`, and reports what got deployed. The
+In practice you say things like "add envoy-gateway to the infra components",
+"onboard a new app called `payments`" or "promote the apps to production",
+and the agent creates the directories, mirror entries and reconciler files,
+runs `make vet` and `make sync`, and reports what got deployed. The
 `.agents/skills/gitops-knowledge` skill gives it the Flux and Flux Operator
 API references, so it can generate schema-valid resources without guessing.
+
+To update the skill run `flux operator skills update`.
 
 ## Docs
 
