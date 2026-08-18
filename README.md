@@ -57,6 +57,23 @@ make sync    # push the artifact and reconcile
 # inspect the result in the Flux Web UI at http://localhost:9080
 ```
 
+## Working with AI agents
+
+This repo is designed to be operated by coding agents, with humans steering.
+The conventions are strict and mechanical on purpose: a component or app is a
+directory with a fixed shape, environments are overlays with fixed names, and
+every rule an agent needs is written down in [AGENTS.md](AGENTS.md) and
+`docs/`. `make vet` validates the whole tree (kustomize build + Flux and
+Kubernetes schemas), so an agent can check its own work before anything
+reaches a cluster.
+
+In practice you say things like "add ingress-nginx to the infra components",
+"onboard a new app called `payments`" or "pin `staging` to `6.14.x`", and the
+agent creates the directories, mirror entries and reconciler files, runs
+`make vet` and `make sync`, and reports what got deployed. The
+`.agents/skills/gitops-knowledge` skill gives it the Flux and Flux Operator
+API references, so it can generate schema-valid resources without guessing.
+
 ## Docs
 
 | Guide | What it covers |
