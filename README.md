@@ -15,11 +15,12 @@ What that means in practice:
   the container registry and picks the newest image tag that matches the
   environment's rule (for example "latest stable version" in staging and prod,
   "release candidates" in test). Push a new image and it rolls out.
-- **Cluster environments and app environments are separate.** A cluster is `dev` or `prod`, which decides
-  how infra is configured. On top of that, apps run in *app environments*:
-  `test`, `staging` and `prod`, each a namespace containing a copy of every
-  app. The dev cluster hosts `test` and `staging`; the prod cluster hosts
-  `prod`. Adding another app environment to a cluster is one small file.
+- **Cluster environments and app environments are separate.** A cluster is
+  `dev` or `prod`, which decides how infra is configured. On top of that, apps
+  run in *app environments*: `test`, `staging` and `prod`, each a namespace
+  containing a copy of every app. The dev cluster hosts `test` and `staging`;
+  the prod cluster hosts `prod`. Adding another app environment to a cluster
+  is one small file.
 
 ## Layout
 
