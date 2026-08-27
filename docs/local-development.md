@@ -100,6 +100,13 @@ drops the quotes around `"${app_semver}"` and post-build substitution then
 yields invalid YAML. Use `x` (any), `6.14.x`, `~6.14.0`, `^6.14.0` (same major)
 or `x || >=0.0.0-0` (with prereleases).
 
+If cert-manager keeps restarting on Docker Desktop, the VM clock jumped after
+the host slept: leader election loses its lease and the controller's
+clock-skew liveness probe fails. The cert-manager `dev` overlay relaxes
+`global.leaderElection` and disables the controller `livenessProbe` to cope.
+This patch is a local-only workaround and must never be applied to a real
+cluster.
+
 ## Conventions
 
 - Cluster-specific values go in `kubernetes/clusters/<cluster>/flux-vars.yaml`,

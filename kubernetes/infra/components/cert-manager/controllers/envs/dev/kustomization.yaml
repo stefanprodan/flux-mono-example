@@ -10,3 +10,19 @@ patches:
       - op: add
         path: /spec/insecure
         value: true
+  - target:
+      kind: HelmRelease
+      name: cert-manager
+    patch: |
+      # Tolerate clock jumps after host sleep on Docker Desktop (see docs/local-development.md)
+      - op: add
+        path: /spec/values/global
+        value:
+          leaderElection:
+            leaseDuration: 300s
+            renewDeadline: 240s
+            retryPeriod: 60s
+      - op: add
+        path: /spec/values/livenessProbe
+        value:
+          enabled: false
