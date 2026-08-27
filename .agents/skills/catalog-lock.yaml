@@ -17,16 +17,16 @@ spec:
 status:
   inventory:
   - annotations:
-      org.opencontainers.image.created: "2026-07-22T14:03:01+02:00"
+      org.opencontainers.image.created: "2026-08-25T14:34:34+03:00"
       org.opencontainers.image.description: AI Agent Skills for Flux CD
       org.opencontainers.image.licenses: Apache-2.0
-      org.opencontainers.image.revision: refs/tags/v0.2.0@sha1:9b05787530a3e200a9ac031fc8a477566e0b7adc
+      org.opencontainers.image.revision: refs/tags/v0.3.0@sha1:e7e95ef1648a72f5276db6f98b799c5974ea846f
       org.opencontainers.image.source: https://github.com/fluxcd/agent-skills
-      org.opencontainers.image.version: v0.2.0
-    digest: sha256:97c08152e19b8105338d0d66db76828b919f244f450a530ff0815c5cf82229d9
+      org.opencontainers.image.version: v0.3.0
+    digest: sha256:efc315cd463fc7494477e54e955367007ff8701e1f3b2ee17bc0c97265543530
     id: 8e890a5d
-    lastUpdateAt: "2026-08-17T18:42:51Z"
+    lastUpdateAt: "2026-08-27T14:41:50Z"
     skills:
-    - checksum: h1:HTvu2y35KBkEEQ2CE9tm7FJnenl/RkjEu3trSU2jxWo=
+    - checksum: h1:9oiVZCKTx14DW+bYF4Ab34wLSsKMSd87/TLKGmu0JXU=
       name: gitops-knowledge
     url: ghcr.io/fluxcd/agent-skills:latest
