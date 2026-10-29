@@ -47,7 +47,7 @@ no external dependencies at reconcile time.
 `flux/local-mirror.yaml` has two sections:
 
 ```yaml
-apiVersion: mirror.plugin.fluxcd.io/v1beta1
+apiVersion: mirror.plugin.fluxcd.io/v1beta2
 kind: Config
 charts:                                       # HTTPS Helm repo → OCI
   - name: metrics-server

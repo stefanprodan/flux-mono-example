@@ -29,7 +29,7 @@ This runs `flux mirror sync flux/promote.yaml`. The config holds the two
 registries; only the app name and the version come from the environment:
 
 ```yaml
-apiVersion: mirror.plugin.fluxcd.io/v1beta1
+apiVersion: mirror.plugin.fluxcd.io/v1beta2
 kind: Config
 artifacts:
   - source: localhost:5050/${APP}
@@ -92,7 +92,7 @@ provider's ambient identity — no `docker login`, no long-lived registry
 passwords:
 
 ```yaml
-apiVersion: mirror.plugin.fluxcd.io/v1beta1
+apiVersion: mirror.plugin.fluxcd.io/v1beta2
 kind: Config
 hosts:
   - host: 111111111111.dkr.ecr.eu-west-1.amazonaws.com   # dev account

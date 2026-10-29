@@ -2,7 +2,7 @@
 # Usage: make promote APP=frontend VERSION=6.14.0
 # APP and VERSION are substituted from the environment by flux mirror.
 # Locally the prod registry is a second container on localhost:5051 (see docs/promotion.md).
-apiVersion: mirror.plugin.fluxcd.io/v1beta1
+apiVersion: mirror.plugin.fluxcd.io/v1beta2
 kind: Config
 artifacts:
   - source: localhost:5050/${APP}
